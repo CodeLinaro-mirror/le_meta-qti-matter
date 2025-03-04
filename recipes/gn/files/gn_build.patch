@@ -1,0 +1,24 @@
+From 18fc4556cb275f75a57bed49797c013c0982ef9b Mon Sep 17 00:00:00 2001
+From: Yingqian Yang <yingqian@qti.qualcomm.com>
+Date: Fri, 26 May 2023 07:28:56 +0530
+Subject: [PATCH] disable Wextra-semi option
+
+---
+ build/gen.py | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/build/gen.py b/build/gen.py
+index 2d109ed6..e84fc9a1 100755
+--- a/build/gen.py
++++ b/build/gen.py
+@@ -445,7 +445,6 @@ def WriteGNNinja(path, platform, host, options, args_list):
+         '-Wextra',
+         '-Wno-unused-parameter',
+ 
+-        '-Wextra-semi',
+         '-Wundef',
+ 
+         '-std=c++17'
+-- 
+2.17.1
+
