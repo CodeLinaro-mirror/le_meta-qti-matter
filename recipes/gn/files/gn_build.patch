@@ -1,8 +1,11 @@
-From 18fc4556cb275f75a57bed49797c013c0982ef9b Mon Sep 17 00:00:00 2001
-From: Yingqian Yang <yingqian@qti.qualcomm.com>
-Date: Fri, 26 May 2023 07:28:56 +0530
-Subject: [PATCH] disable Wextra-semi option
+From 5cede05fce050eda8bd3e8d74835c885a3352448 Mon Sep 17 00:00:00 2001
+From: Yingqian Yang <quic_yingqian@quicinc.com>
+Date: Thu, 27 Jul 2023 07:24:13 +0530
+Subject: [PATCH] add gn build for matter
 
+enable gn-native during matter build
+
+Signed-off-by: Yingqian Yang <quic_yingqian@quicinc.com>
 ---
  build/gen.py | 1 -
  1 file changed, 1 deletion(-)
@@ -14,11 +17,10 @@ index 2d109ed6..e84fc9a1 100755
 @@ -445,7 +445,6 @@ def WriteGNNinja(path, platform, host, options, args_list):
          '-Wextra',
          '-Wno-unused-parameter',
- 
+
 -        '-Wextra-semi',
          '-Wundef',
- 
-         '-std=c++17'
--- 
-2.17.1
 
+         '-std=c++17'
+--
+2.17.1

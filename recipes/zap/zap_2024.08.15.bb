@@ -1,5 +1,5 @@
 SUMMARY = "ZAP stands for ZCL Advanced Platform. It is used to configure clusters, attributes and other entities for Matter and ZigbeePro applications."
-HOMEPAGE = "https://www.silabs.com/"
+HOMEPAGE = "https://github.com/"
 DESCRIPTION = "Used to Build Matter v1.4 on Qualcomm Platform."
 SECTION = "base"
 
