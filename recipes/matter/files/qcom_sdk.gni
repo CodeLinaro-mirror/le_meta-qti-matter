@@ -3,6 +3,9 @@
 
 declare_args() {
 
+  # The target device number.
+  platform_device = ""
+
   # Directory for sysroot.
   platform_sysroot = ""
 

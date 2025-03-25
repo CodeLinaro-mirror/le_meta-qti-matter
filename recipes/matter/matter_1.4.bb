@@ -11,15 +11,14 @@ BRANCH = "v1.4-branch"
 SRC_URI = "git://github.com/project-chip/connectedhomeip.git;branch=${BRANCH};protocol=https"
 SRCREV = "43aa98c2d30ee547c6b587b9de7bbb794f175ece"
 
-#SRC_URI += "file://build-config-sysroot-gni.patch"
+SRC_URI += "file://0001-add-config-patch-for-kalama.patch"
 
 S = "${WORKDIR}/git"
 
 #inherit pkgconfig
-
-DEPENDS += "zap-native gn-native avahi ninja-native dbus-glib-native pkgconfig-native libbsd glib-2.0 openssl"
+DEPENDS += "zap-native gn-native ninja-native dbus-glib-native pkgconfig-native libbsd glib-2.0 openssl"
 DEPENDS += "libchrome fluoride bt-app btobex"
-RDEPENDS:${PN} += " libavahi-client"
+RDEPENDS:${PN} += " avahi"
 
 TARGET_CC = "${CC}"
 TARGET_CXX = "${CXX}"
@@ -37,8 +36,12 @@ do_configure() {
 
     touch ${S}/build_overrides/pigweed_environment.gni
 
-    cd ${S}/examples/all-clusters-app/linux
-    #cd ${S}/examples/all-clusters-app/qcom/${TARGET_MACH}
+    python3 ${THISDIR}/files/generate-for-platform.py ${S} ${THISDIR}/files/ ${TARGET_MACH}
+    
+    cp ${THISDIR}/files/qcom_sdk.gni ${S}/build_overrides/
+    cp ${THISDIR}/files/qcom_sdk.gni ${S}/examples/build_overrides/
+
+    cd ${S}/examples/all-clusters-app/qcom/${TARGET_MACH}
 
     bbnote "TARGET_ARCH=${TARGET_ARCH}"
     bbnote "TARGET_CC=${TARGET_CC}"
@@ -57,6 +60,8 @@ do_configure() {
             "-DCHIP_DEVICE_CONFIG_LINUX_DHCPC_CMD=\"dhcpcd -i %s \"",
             "-O3"]
         custom_toolchain="${build_root}/toolchain/custom"
+        chip_device_platform="qcom"
+        platform_device="${TARGET_MACH}"
         platform_srcroot="${WORKSPACE}"
         platform_sysroot="${PKG_CONFIG_SYSROOT_DIR}"
         target_cc="${TARGET_CC}"
@@ -69,19 +74,17 @@ do_compile() {
 
     export ZAP_DEVELOPMENT_PATH="${STAGING_BINDIR_NATIVE}/zap"
 
-    cd ${S}/examples/all-clusters-app/linux/out/test
-    #cd ${S}/examples/all-clusters-app/qcom/${TARGET_MACH}/out/test
+    cd ${S}/examples/all-clusters-app/qcom/${TARGET_MACH}/out/test
     python3 ${THISDIR}/files/rspfile.py toolchain.ninja ${S}
 
-    cd ${S}/examples/all-clusters-app/linux
-    #cd ${S}/examples/all-clusters-app/qcom/${TARGET_MACH}/
+    cd ${S}/examples/all-clusters-app/qcom/${TARGET_MACH}/
     ninja -C out/test
 
 }
 
 do_install() {
     install -d -m 755 ${D}${sbindir}
-    install ${S}/examples/all-clusters-app/linux/out/test/chip-all-clusters-app ${D}${sbindir}
+    install ${S}/examples/all-clusters-app/qcom/${TARGET_MACH}/out/test/chip-all-clusters-app ${D}${sbindir}
     install -d ${D}${libdir}/matter
 }
 

@@ -60,11 +60,6 @@ if __name__ == '__main__':
         shutil.copytree(os.path.join(source, "Linux"), os.path.join(source, platform, device), ignore=shutil.ignore_patterns("bluez"))
         soft_link_path_adjust(os.path.join(source, platform, device))
 
-    if os.path.exists(os.path.join(source, platform, device, "fluoride")):
-        subprocess.run(['rm', '-rf', os.path.join(source, platform, device, "fluoride")], shell=False, check=False)
-
-    subprocess.run(['mkdir', '-p', os.path.join(source, platform, device, "fluoride")], shell=False, check=False)
-    subprocess.run(['cp', os.path.join(source, "Linux", "bluez", "Types.h"), os.path.join(source, platform, device, "fluoride")], shell=False, check=False)
 
     directories = [source] + examples
     for item in directories:
@@ -73,10 +68,17 @@ if __name__ == '__main__':
                 filename = os.path.join(rootdir, file)
                 platform_file_include_adjust(platform, device, filename)
 
+    if os.path.exists(os.path.join(source, platform, device, "fluoride")):
+        subprocess.run(['rm', '-rf', os.path.join(source, platform, device, "fluoride")], shell=False, check=False)
+
+    subprocess.run(['mkdir', '-p', os.path.join(source, platform, device, "fluoride")], shell=False, check=False)
+    subprocess.run(['cp', os.path.join(source, "Linux", "bluez", "Types.h"), os.path.join(source, platform, device, "fluoride")], shell=False, check=False)
+
 
     # apply patch
     os.chdir(os.path.join(matter, 'src', 'platform', platform, device))
-    subprocess.run(['patch', '-p1', '-i', os.path.join(patch, 'matter-src-platform-linux.patch')], shell=False, check=False)
-
+    subprocess.run(['patch', '-p4', '-i', os.path.join(patch, '0001-add-kalama-patch-for-matter.patch')], shell=False, check=False)
+    os.chdir(os.path.join(matter, 'examples', 'all-clusters-app', platform, device))
+    subprocess.run(['patch', '-p4', '-i', os.path.join(patch, '0001-add-kalama-in-all-clusters-app-example.patch')], shell=False, check=False)
 
 

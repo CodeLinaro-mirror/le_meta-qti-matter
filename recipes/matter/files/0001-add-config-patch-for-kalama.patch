@@ -1,0 +1,212 @@
+#This patch file is from Qualcomm Innovation Center, Inc. and is
+#provided under the following license:
+#Copyright (c) 2025 Qualcomm Innovation Center, Inc. All rights
+#reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+From 3037a662441075f0681fae31a286eea717d948c5 Mon Sep 17 00:00:00 2001
+From: Xiaogang Wei <quic_xiwei@quicinc.com>
+Date: Thu, 27 Mar 2025 19:26:56 -0700
+Subject: [PATCH] add config patch for kalama
+
+Signed-off-by: Xiaogang Wei <quic_xiwei@quicinc.com>
+---
+ build/config/sysroot.gni      |  2 ++
+ src/platform/BUILD.gn         | 43 ++++++++++++++++++++++++++++++++++-
+ src/platform/device.gni       | 13 +++++++----
+ src/platform/logging/BUILD.gn |  2 ++
+ src/system/BUILD.gn           |  2 ++
+ 5 files changed, 57 insertions(+), 5 deletions(-)
+
+diff --git a/build/config/sysroot.gni b/build/config/sysroot.gni
+index 8c5d105c76e..4a0a27ea58a 100644
+--- a/build/config/sysroot.gni
++++ b/build/config/sysroot.gni
+@@ -14,6 +14,8 @@
+ 
+ import("//build_overrides/build.gni")
+ 
++import("//build_overrides/qcom_sdk.gni")
++
+ import("${build_root}/config/compiler/compiler.gni")
+ 
+ declare_args() {
+diff --git a/src/platform/BUILD.gn b/src/platform/BUILD.gn
+index d379bd0e1f4..5c89d6b7b7d 100644
+--- a/src/platform/BUILD.gn
++++ b/src/platform/BUILD.gn
+@@ -27,6 +27,12 @@ if (chip_enable_openthread) {
+   if (chip_device_platform == "linux" || chip_device_platform == "darwin") {
+     import("//build_overrides/ot_br_posix.gni")
+   }
++
++  if (chip_device_platform == "qcom") {
++    if (platform_device == "kalama") {
++      import("//build_overrides/ot_br_posix.gni")
++    }
++  }
+ }
+ 
+ if (chip_device_platform != "none" && chip_device_platform != "external") {
+@@ -90,12 +96,22 @@ if (chip_device_platform != "none" && chip_device_platform != "external") {
+     chip_device_config_thread_network_endpoint_id = 0
+   }
+ 
++  if (chip_device_platform == "qcom") {
++    chip_use_transitional_commissionable_data_provider = platform_device != "kalama"
++  }
++
+   if (chip_stack_lock_tracking == "auto") {
+     if (chip_device_platform == "linux" || chip_device_platform == "tizen" ||
+         chip_device_platform == "android" || current_os == "freertos" ||
+         chip_device_platform == "webos" || chip_device_platform == "darwin") {
+       # TODO: should be fatal for development. Change once bugs are fixed
+       chip_stack_lock_tracking = "fatal"
++    } else if (chip_device_platform == "qcom") {
++      if (platform_device == "kalama") {
++        chip_stack_lock_tracking = "fatal"
++      } else {
++        chip_stack_lock_tracking = "none"
++      }
+     } else {
+       # TODO: may want to enable at least logging for embedded to find bugs
+       # this needs tuning depending on how many resources various platforms have
+@@ -152,6 +168,12 @@ if (chip_device_platform != "none" && chip_device_platform != "external") {
+       defines += [ "CHIP_DEVICE_CONFIG_ENABLE_CHIPOBLE=${chip_enable_ble}" ]
+     }
+ 
++    if (chip_device_platform == "qcom") {
++      if (platform_device == "kalama") {
++        defines += [ "CHIP_DEVICE_CONFIG_ENABLE_CHIPOBLE=${chip_enable_ble}" ]
++      }
++    }
++
+     if (chip_enable_nfc) {
+       defines += [
+         "CHIP_DEVICE_CONFIG_ENABLE_NFC=1",
+@@ -322,6 +344,12 @@ if (chip_device_platform != "none" && chip_device_platform != "external") {
+         "CHIP_DEVICE_LAYER_TARGET=NuttX",
+         "CHIP_DEVICE_CONFIG_ENABLE_WIFI=${chip_enable_wifi}",
+       ]
++    } else if (chip_device_platform == "qcom") {
++      device_layer_target_define = "LINUX"
++      defines += [
++        "CHIP_DEVICE_LAYER_TARGET=qcom/${platform_device}",
++        "CHIP_DEVICE_CONFIG_ENABLE_WIFI=${chip_enable_wifi}",
++      ]
+     } else {
+       device_layer_target_define = ""
+     }
+@@ -518,13 +546,24 @@ if (chip_device_platform != "none") {
+ 
+     # Linux has its own NetworkCommissioningThreadDriver
+     if (chip_enable_openthread && chip_device_platform != "linux" &&
+-        chip_device_platform != "tizen" && chip_device_platform != "webos") {
++        chip_device_platform != "tizen" && chip_device_platform != "webos" &&
++        chip_device_platform != "qcom") {
+       sources += [
+         "OpenThread/GenericNetworkCommissioningThreadDriver.cpp",
+         "OpenThread/GenericNetworkCommissioningThreadDriver.h",
+       ]
+     }
+ 
++    if (chip_device_platform == "qcom") {
++      if (platform_device != "kalama") {
++        sources += [
++          "OpenThread/GenericNetworkCommissioningThreadDriver.cpp",
++          "OpenThread/GenericNetworkCommissioningThreadDriver.h",
++        ]
++      }
++    }
++
++
+     cflags = [ "-Wconversion" ]
+ 
+     public_deps = [
+@@ -598,6 +637,8 @@ if (chip_device_platform != "none") {
+       _platform_target = "stm32"
+     } else if (chip_device_platform == "nuttx") {
+       _platform_target = "NuttX"
++    } else if (chip_device_platform == "qcom") {
++      _platform_target = "qcom/${platform_device}"
+     } else {
+       assert(false, "Unknown chip_device_platform: ${chip_device_platform}")
+     }
+diff --git a/src/platform/device.gni b/src/platform/device.gni
+index 87e2eb12e8d..a76dc70bb90 100644
+--- a/src/platform/device.gni
++++ b/src/platform/device.gni
+@@ -16,7 +16,7 @@ import("//build_overrides/chip.gni")
+ import("${chip_root}/src/ble/ble.gni")
+ 
+ declare_args() {
+-  # Device platform layer: cc13x4_26x4, cc32xx, darwin, efr32, esp32, external, freertos, linux, nrfconnect, nxp, qpg, tizen, cyw30739, bl602, mw320, zephyr, beken, openiotsdk, none.
++  # Device platform layer: cc13x4_26x4, cc32xx, darwin, efr32, esp32, external, freertos, linux, nrfconnect, nxp, qpg, tizen, cyw30739, bl602, mw320, zephyr, beken, openiotsdk, qcom, none.
+ 
+   chip_device_platform = "auto"
+   chip_platform_target = ""
+@@ -76,7 +76,8 @@ declare_args() {
+       chip_device_platform == "bl602" || chip_device_platform == "mw320" ||
+       chip_device_platform == "beken" || chip_device_platform == "mt793x" ||
+       chip_device_platform == "asr" ||
+-      (chip_device_platform == "darwin" && current_os == "mac")
++      (chip_device_platform == "darwin" && current_os == "mac") ||
++      chip_device_platform == "qcom"
+ 
+   # Enable ble support.
+   if (chip_device_platform == "fake") {
+@@ -98,7 +99,7 @@ declare_args() {
+       chip_device_platform == "cc32xx" || chip_device_platform == "mw320" ||
+       chip_device_platform == "beken" || chip_device_platform == "mt793x" ||
+       chip_device_platform == "asr" || chip_device_platform == "openiotsdk" ||
+-      chip_device_platform == "nuttx") {
++      chip_device_platform == "nuttx" || chip_device_platform == "qcom") {
+     chip_mdns = "minimal"
+   } else if (chip_device_platform == "darwin" ||
+              chip_device_platform == "cc13x4_26x4" || current_os == "android" ||
+@@ -199,6 +200,9 @@ if (chip_device_platform == "cc13x4_26x4") {
+   _chip_device_layer = "NuttX"
+ } else if (chip_device_platform == "stm32") {
+   _chip_device_layer = "stm32"
++} else if (chip_device_platform == "qcom") {
++  import("//build_overrides/qcom_sdk.gni")
++  _chip_device_layer = "qcom/${platform_device}"
+ }
+ 
+ if (chip_device_platform != "external") {
+@@ -269,5 +273,6 @@ assert(
+         chip_device_platform == "bl702l" || chip_device_platform == "mt793x" ||
+         chip_device_platform == "SiWx917" ||
+         chip_device_platform == "openiotsdk" || chip_device_platform == "asr" ||
+-        chip_device_platform == "stm32" || chip_device_platform == "nuttx",
++        chip_device_platform == "stm32" || chip_device_platform == "nuttx" ||
++        chip_device_platform == "qcom",
+     "Please select a valid value for chip_device_platform")
+diff --git a/src/platform/logging/BUILD.gn b/src/platform/logging/BUILD.gn
+index eb3c62154ce..1460373f8bb 100644
+--- a/src/platform/logging/BUILD.gn
++++ b/src/platform/logging/BUILD.gn
+@@ -78,6 +78,8 @@ group("default") {
+       deps += [ "${chip_root}/src/platform/NuttX:logging" ]
+     } else if (chip_device_platform == "android") {
+       deps += [ "${chip_root}/src/platform/android:logging" ]
++    } else if (chip_device_platform == "qcom") {
++      deps += [ "${chip_root}/src/platform/qcom/${platform_device}:logging" ]
+     } else {
+       assert(chip_device_platform == "fake" ||
+              chip_device_platform == "external" || chip_device_platform == "none")
+diff --git a/src/system/BUILD.gn b/src/system/BUILD.gn
+index 40ae99ae99c..83bafd8773e 100644
+--- a/src/system/BUILD.gn
++++ b/src/system/BUILD.gn
+@@ -72,6 +72,8 @@ if (chip_device_platform == "cc13x4_26x4") {
+   import("//build_overrides/bouffalolab_iot_sdk.gni")
+ } else if (chip_device_platform == "bl702l") {
+   import("//build_overrides/bouffalolab_iot_sdk.gni")
++} else if (chip_device_platform == "qcom") {
++  import("//build_overrides/qcom_sdk.gni")
+ }
+ 
+ buildconfig_header("system_buildconfig") {
+-- 
+2.34.1
+

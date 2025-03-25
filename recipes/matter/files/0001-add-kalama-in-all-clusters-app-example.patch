@@ -1,0 +1,99 @@
+#This patch file is from Qualcomm Innovation Center, Inc. and is
+#provided under the following license:
+#Copyright (c) 2025 Qualcomm Innovation Center, Inc. All rights
+#reserved.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+From 611aa3890a3236fa5c38b5025e340bcdf1619fc7 Mon Sep 17 00:00:00 2001
+From: Xiaogang Wei <quic_xiwei@quicinc.com>
+Date: Thu, 27 Mar 2025 19:32:31 -0700
+Subject: [PATCH] add kalama in all clusters app example
+
+Signed-off-by: Xiaogang Wei <quic_xiwei@quicinc.com>
+---
+ examples/all-clusters-app/linux/BUILD.gn | 14 +++++++-------
+ examples/all-clusters-app/linux/args.gni |  2 +-
+ 2 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/examples/all-clusters-app/linux/BUILD.gn b/examples/all-clusters-app/linux/BUILD.gn
+index 0e16c64c41d..0d33e7aa5c6 100644
+--- a/examples/all-clusters-app/linux/BUILD.gn
++++ b/examples/all-clusters-app/linux/BUILD.gn
+@@ -59,7 +59,7 @@ source_set("chip-all-clusters-common") {
+     "${chip_root}/examples/all-clusters-app/all-clusters-common/src/static-supported-modes-manager.cpp",
+     "${chip_root}/examples/all-clusters-app/all-clusters-common/src/static-supported-temperature-levels.cpp",
+     "${chip_root}/examples/all-clusters-app/all-clusters-common/src/tcc-mode.cpp",
+-    "${chip_root}/examples/all-clusters-app/linux/diagnostic-logs-provider-delegate-impl.cpp",
++    "${chip_root}/examples/all-clusters-app/qcom/kalama/diagnostic-logs-provider-delegate-impl.cpp",
+     "${chip_root}/examples/energy-management-app/energy-management-common/common/src/EnergyTimeUtils.cpp",
+     "${chip_root}/examples/energy-management-app/energy-management-common/device-energy-management/src/DeviceEnergyManagementDelegateImpl.cpp",
+     "${chip_root}/examples/energy-management-app/energy-management-common/device-energy-management/src/DeviceEnergyManagementManager.cpp",
+@@ -91,7 +91,7 @@ source_set("chip-all-clusters-common") {
+ 
+   deps = [
+     "${chip_root}/examples/all-clusters-app/all-clusters-common",
+-    "${chip_root}/examples/platform/linux:app-main",
++    "${chip_root}/examples/platform/qcom/kalama:app-main",
+     "${chip_root}/src/app/tests/suites/credentials:dac_provider",
+     "${chip_root}/src/lib",
+     "${chip_root}/third_party/jsoncpp",
+@@ -148,7 +148,7 @@ if (is_libfuzzer) {
+ 
+     deps = [
+       ":chip-all-clusters-common",
+-      "${chip_root}/examples/platform/linux:app-main",
++      "${chip_root}/examples/platform/qcom/kalama:app-main",
+     ]
+ 
+     cflags = [ "-Wconversion" ]
+@@ -161,7 +161,7 @@ if (is_libfuzzer) {
+ 
+     deps = [
+       ":chip-all-clusters-common",
+-      "${chip_root}/examples/platform/linux:app-main",
++      "${chip_root}/examples/platform/qcom/kalama:app-main",
+     ]
+ 
+     cflags = [ "-Wconversion" ]
+@@ -190,7 +190,7 @@ if (is_libfuzzer) {
+   }
+ }
+ 
+-group("linux") {
++group("qcom/kalama") {
+   deps = []
+   if (is_libfuzzer) {
+     deps += [ ":chip-all-clusters-app-fuzzing" ]
+@@ -200,7 +200,7 @@ group("linux") {
+ }
+ 
+ group("default") {
+-  deps = [ ":linux" ]
++  deps = [ ":qcom/kalama" ]
+ }
+ 
+ if (enable_fuzz_test_targets) {
+@@ -208,7 +208,7 @@ if (enable_fuzz_test_targets) {
+     sources = [ "fuzzing-main.cpp" ]
+     public_deps = [
+       ":chip-all-clusters-common",
+-      "${chip_root}/examples/platform/linux:app-main",
++      "${chip_root}/examples/platform/qcom/kalama:app-main",
+     ]
+   }
+ }
+diff --git a/examples/all-clusters-app/linux/args.gni b/examples/all-clusters-app/linux/args.gni
+index 92d01ea3358..7cc29109be0 100644
+--- a/examples/all-clusters-app/linux/args.gni
++++ b/examples/all-clusters-app/linux/args.gni
+@@ -21,7 +21,7 @@ chip_project_config_include = "<CHIPProjectAppConfig.h>"
+ chip_system_project_config_include = "<SystemProjectConfig.h>"
+ 
+ chip_project_config_include_dirs =
+-    [ "${chip_root}/examples/all-clusters-app/linux/include" ]
++    [ "${chip_root}/examples/all-clusters-app/qcom/kalama/include" ]
+ chip_project_config_include_dirs += [ "${chip_root}/config/standalone" ]
+ 
+ matter_enable_tracing_support = true
+-- 
+2.34.1
+
