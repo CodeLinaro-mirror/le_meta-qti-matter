@@ -78,7 +78,6 @@ if __name__ == '__main__':
     # apply patch
     os.chdir(os.path.join(matter, 'src', 'platform', platform, device))
     subprocess.run(['patch', '-p4', '-i', os.path.join(patch, '0001-add-kalama-patch-for-matter.patch')], shell=False, check=False)
-    os.chdir(os.path.join(matter, 'examples', 'all-clusters-app', platform, device))
-    subprocess.run(['patch', '-p4', '-i', os.path.join(patch, '0001-add-kalama-in-all-clusters-app-example.patch')], shell=False, check=False)
-
+    os.chdir(matter)
+    subprocess.run(['patch', '-p1', '-i', os.path.join(patch, '0001-add-kalama-in-all-clusters-app-example.patch')], shell=False, check=False)
 
