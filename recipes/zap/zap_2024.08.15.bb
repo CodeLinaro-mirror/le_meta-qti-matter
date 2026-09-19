@@ -17,7 +17,7 @@ SRCREV = "33637fe41ab27b217a31ebd7d199825628c4695c"
 
 #inherit pkgconfig
 
-S = "${WORKDIR}/git"
+S = "${UNPACKDIR}/git"
 
 DEPENDS += "nodejs-native"
 

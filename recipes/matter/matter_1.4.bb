@@ -13,7 +13,7 @@ SRCREV = "43aa98c2d30ee547c6b587b9de7bbb794f175ece"
 
 SRC_URI += "file://0001-add-config-patch-for-kalama.patch"
 
-S = "${WORKDIR}/git"
+S = "${UNPACKDIR}/git"
 
 #inherit pkgconfig
 DEPENDS += "zap-native gn-native ninja-native dbus-glib-native pkgconfig-native libbsd glib-2.0 openssl"

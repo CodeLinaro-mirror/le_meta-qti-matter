@@ -15,7 +15,7 @@ SRC_URI[md5sum] = "9a28108dcc21f8e7d9deed43678beb81"
 
 SRC_URI += " file://gn_build.patch "
 
-S = "${WORKDIR}/git"
+S = "${UNPACKDIR}/git"
 
 DEPENDS += "ninja-native"
 
